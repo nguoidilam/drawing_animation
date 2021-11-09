@@ -10,8 +10,8 @@ import 'package:xml/xml.dart' as xml;
 /// Parses a minimal subset of a SVG file and extracts all paths segments.
 class SvgParser {
   /// Each [PathSegment] represents a continuous Path element of the parent Path
-  final List<PathSegment> _pathSegments = List<PathSegment>();
-  List<Path> _paths = new List<Path>();
+  final List<PathSegment> _pathSegments = [];
+  List<Path> _paths = [];
 
   //TODO do proper parsing and support hex-alpa and RGBA
   Color parseColor(String cStr) {
@@ -58,48 +58,44 @@ class SvgParser {
         .findAllElements("path")
         .map((node) => node.attributes)
         .forEach((attributes) {
-      var dPath = attributes.firstWhere((attr) => attr.name.local == "d",
-          orElse: () => null);
+      var dPath = attributes.firstWhere((attr) => attr.name.local == "d");
       if (dPath != null) {
         Path path = new Path();
         writeSvgPathDataToPath(dPath.value, new PathModifier(path));
 
-        Color color;
-        double strokeWidth;
+        late Color color;
+        late double strokeWidth;
 
         //Attributes - [1] css-styling
-        var style = attributes.firstWhere((attr) => attr.name.local == "style",
-            orElse: () => null);
+        var style = attributes.firstWhere((attr) => attr.name.local == "style");
         if (style != null) {
           //Parse color of stroke
           RegExp exp = new RegExp(r"stroke:([^;]+);");
-          Match match = exp.firstMatch(style.value);
+          Match? match = exp.firstMatch(style.value);
           if (match != null) {
-            String cStr = match.group(1);
-            color = parseColor(cStr);
+            String? cStr = match.group(1);
+            color = parseColor(cStr!);
           }
           //Parse stroke-width
           exp = new RegExp(r"stroke-width:([0-9.]+)");
           match = exp.firstMatch(style.value);
           if (match != null) {
-            String cStr = match.group(1);
-            strokeWidth = double.tryParse(cStr) ?? null;
+            String? cStr = match.group(1);
+            strokeWidth = (double.tryParse(cStr!) ?? null)!;
           }
         }
 
         //Attributes - [2] svg-attributes
         var strokeElement = attributes.firstWhere(
-            (attr) => attr.name.local == "stroke",
-            orElse: () => null);
+            (attr) => attr.name.local == "stroke");
         if (strokeElement != null) {
           color = parseColor(strokeElement.value);
         }
 
         var strokeWidthElement = attributes.firstWhere(
-            (attr) => attr.name.local == "stroke-width",
-            orElse: () => null);
+            (attr) => attr.name.local == "stroke-width");
         if (strokeWidthElement != null) {
-          strokeWidth = double.tryParse(strokeWidthElement.value) ?? null;
+          strokeWidth = (double.tryParse(strokeWidthElement.value) ?? null)!;
         }
 
         this._paths.add(path);
@@ -117,8 +113,8 @@ class SvgParser {
     paths.forEach((p) {
       assert(p != null,
           "Path element in `paths` must not be null."); //TODO consider allowing this and just continue if the case
-      addPathSegments(p, index, null,
-          null); //TODO Apply `paints` already here? not so SOLID[0]
+      addPathSegments(p, index, 1,
+          Colors.blueAccent); //TODO Apply `paints` already here? not so SOLID[0]
       index++;
     });
   }
@@ -156,21 +152,21 @@ class PathSegment {
   }
 
   /// A continuous path/segment
-  Path path;
-  double strokeWidth;
-  Color color;
+  Path? path;
+  double? strokeWidth;
+  Color? color;
 
   /// Length of the segment path
-  double length;
+  double? length;
 
   /// Denotes the index of the first segment of the containing path when PathOrder.original
-  int firstSegmentOfPathIndex;
+  int? firstSegmentOfPathIndex;
 
   /// Corresponding containing path index
-  int pathIndex;
+  int? pathIndex;
 
   /// Denotes relative index to  firstSegmentOfPathIndex
-  int relativeIndex;
+  int? relativeIndex;
 //TODO parse/use those two and consider reducing fields and calculate more on the fly.
   /// If stroke, how to end
 // StrokeCap cap;

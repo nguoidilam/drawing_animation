@@ -24,8 +24,8 @@ class DebugOptions {
   int _frameCount = -1;
 }
 
-void resetFrame(DebugOptions options) {
-  options._frameCount = -1;
+void resetFrame(DebugOptions? options) {
+  options?._frameCount = -1;
 }
 
 void iterateFrame(DebugOptions options) {
